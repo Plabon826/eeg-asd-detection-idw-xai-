@@ -1,0 +1,55 @@
+% Add EEGLAB to the MATLAB path (if not done already)
+addpath(genpath('path_to_eeglab'));  % Replace with the actual path to EEGLAB
+
+% Initialize EEGLAB
+eeglab;
+
+% Define the directory where the .set files are located
+folderPath = '/Users/hello/Desktop/16840351/';  % Update this to your correct path
+
+% Get all .set files in the folder
+files = dir(fullfile(folderPath, '*.set'));
+numFiles = length(files);
+
+% Initialize arrays to store the metadata for table
+filenames = cell(numFiles, 1);
+setnames = cell(numFiles, 1);
+nbchan_values = zeros(numFiles, 1);
+
+% Initialize counters for ASD and P groups
+asdcnt = 0;
+pcount = 0;
+
+% Loop through all the files and load each .set file
+for i = 1:numFiles
+    % Load the EEG dataset
+    EEG = pop_loadset('filename', files(i).name, 'filepath', folderPath);
+    
+    % Store the relevant metadata
+    filenames{i} = files(i).name;
+    setnames{i} = EEG.setname;
+    nbchan_values(i) = EEG.nbchan;
+    
+    % Count ASD and P samples based on setname
+    if contains(EEG.setname, 'ASD')
+        asdcnt = asdcnt + 1;  % Increment ASD count
+    elseif contains(EEG.setname, 'P')
+        pcount = pcount + 1;  % Increment P count
+    end
+    
+    % Optional: Print for verification (this part can be skipped if you don't need verbose output)
+    disp(['General Information for sample: ' files(i).name]);
+    disp(EEG);
+    disp('---------------------------------------------------------');
+end
+
+% Create a table to display the collected information
+metadataTable = table(filenames, setnames, nbchan_values);
+
+% Display the table
+disp('Metadata of all samples:');
+disp(metadataTable);
+
+% Display total counts for ASD and P groups
+disp(['Total ASD count: ', num2str(asdcnt)]);
+disp(['Total P count: ', num2str(pcount)]);
